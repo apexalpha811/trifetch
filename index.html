@@ -242,6 +242,34 @@
 
 <script src="deck-stage.js"></script>
 
+<script>
+// Mobile swipe-to-navigate. Calls deck-stage's public goTo API.
+(function(){
+  var TH = 50; // px horizontal travel to count as a swipe
+  var startX = 0, startY = 0, tracking = false;
+  function getStage(){ return document.querySelector('deck-stage'); }
+  document.addEventListener('touchstart', function(e){
+    if (e.touches.length !== 1) { tracking = false; return; }
+    var t = e.touches[0];
+    startX = t.clientX; startY = t.clientY; tracking = true;
+  }, {passive:true});
+  document.addEventListener('touchend', function(e){
+    if (!tracking) return;
+    tracking = false;
+    var t = (e.changedTouches && e.changedTouches[0]); if (!t) return;
+    var dx = t.clientX - startX, dy = t.clientY - startY;
+    if (Math.abs(dx) < TH || Math.abs(dx) < Math.abs(dy)) return;
+    var stage = getStage(); if (!stage) return;
+    var slides = stage.querySelectorAll('section');
+    var current = 0;
+    slides.forEach(function(s, i){ if (s.hasAttribute('data-deck-active')) current = i; });
+    var next = dx < 0 ? current + 1 : current - 1;
+    next = Math.max(0, Math.min(slides.length - 1, next));
+    if (next !== current) stage.goTo(next);
+  }, {passive:true});
+})();
+</script>
+
 <deck-stage width="1920" height="1080">
 
   <!-- 1. COVER -->
